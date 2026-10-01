@@ -37,7 +37,7 @@ class LLMClient:
 
         return False
 
-    def generate(self, prompt):
+    def generate(self, prompt, response_schema=None):
 
         for attempt in range(1, MAX_RETRIES + 1):
 
@@ -48,12 +48,24 @@ class LLMClient:
                     MAX_RETRIES
                 )
 
+                config = None
+
+                if response_schema:
+                    config = {
+                        "response_mime_type": "application/json",
+                        "response_schema": response_schema,
+                    }
+
                 response = self.client.models.generate_content(
                     model=MODEL,
-                    contents=prompt
+                    contents=prompt,
+                    config=config
                 )
 
                 logger.info("Response received")
+
+                if response_schema:
+                    return response.parsed
 
                 return response.text
 
@@ -87,10 +99,14 @@ class LLMClient:
         
 if __name__ == "__main__":
 
+    from schemas import RequestClassification
+
     llm = LLMClient()
 
     result = llm.generate(
-        "What is Python in one line?"
+        "Calculate 25 multiplied by 8.",
+        response_schema=RequestClassification
     )
+
     print("Configured timeout:", TIMEOUT)
     print(result)
