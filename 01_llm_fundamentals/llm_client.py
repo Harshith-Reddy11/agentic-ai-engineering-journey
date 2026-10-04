@@ -34,6 +34,8 @@ class LLMClient:
 
         if "503" in error_message:
             return True
+        if "504" in error_message:
+            return True
 
         return False
 

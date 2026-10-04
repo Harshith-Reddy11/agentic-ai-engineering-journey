@@ -1,5 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
+from pydantic import BaseModel, ConfigDict
+
 
 class RequestClassification(BaseModel):
     intent: str
@@ -8,13 +9,17 @@ class RequestClassification(BaseModel):
     number2: Optional[float] = None
     topic: Optional[str] = None
     action: Optional[str] = None
-    
-# test = RequestClassification(
-#     intent="Calculator",
-#     operation="add",
-#     number1=5,
-#     number2=10
-# )
 
-# print(test)
-# print(test.model_dump())
+class CalculatorArguments(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    a: float
+    b: float
+    operation: str
+    
+class KnowledgeSearchArguments(BaseModel):
+    query: str
+    
+class ToolCall(BaseModel):
+    tool_name: str
+    arguments: dict[str, Any]
+    
