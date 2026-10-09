@@ -1,5 +1,5 @@
-from typing import Optional, Any
-from pydantic import BaseModel, ConfigDict
+from typing import Optional, Any, Literal
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RequestClassification(BaseModel):
@@ -23,3 +23,12 @@ class ToolCall(BaseModel):
     tool_name: str
     arguments: dict[str, Any]
     
+class ToolCallBatch(BaseModel):
+    tool_calls: list[ToolCall]
+
+
+class AgentDecision(BaseModel):
+    action: Literal["tool_call", "final"]
+    tool_name: str | None = None
+    arguments: dict[str, Any] = Field(default_factory=dict)
+    final_answer: str | None = None
