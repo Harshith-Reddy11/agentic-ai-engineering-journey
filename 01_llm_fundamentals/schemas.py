@@ -1,5 +1,5 @@
 from typing import Optional, Any, Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field,  model_validator
 
 
 class RequestClassification(BaseModel):
@@ -27,8 +27,32 @@ class ToolCallBatch(BaseModel):
     tool_calls: list[ToolCall]
 
 
+
 class AgentDecision(BaseModel):
     action: Literal["tool_call", "final"]
     tool_name: str | None = None
     arguments: dict[str, Any] = Field(default_factory=dict)
     final_answer: str | None = None
+
+    @model_validator(mode="after")
+    def validate_action(self):
+        if self.action == "tool_call":
+            if not self.tool_name or not self.tool_name.strip():
+                raise ValueError("Tool call requires a tool name")
+
+            if self.final_answer is not None:
+                raise ValueError(
+                    "Tool call cannot contain a final answer"
+                )
+
+        elif self.action == "final":
+            if not self.final_answer or not self.final_answer.strip():
+                raise ValueError("Final action requires an answer")
+
+            if self.tool_name is not None:
+                raise ValueError(
+                    "Final action cannot specify a tool"
+                )
+
+        return self
+

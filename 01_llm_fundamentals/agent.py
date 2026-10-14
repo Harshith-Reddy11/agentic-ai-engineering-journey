@@ -7,9 +7,26 @@ from agent_state import AgentState
 from schemas import AgentDecision, ToolCall
 from prompts import AGENT_SYSTEM_PROMPT
 from tool_executor import execute_tool
+from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)
+
+
+def validate_goal(goal: str) -> str:
+    if not isinstance(goal, str):
+        raise TypeError("Goal must be a string")
+
+    goal = goal.strip()
+
+    if not goal:
+        raise ValueError("Goal cannot be empty")
+
+    if len(goal) > 2000:
+        raise ValueError("Goal is too long")
+
+    return goal
+
 
 
 class Agent:
@@ -47,6 +64,7 @@ Return one JSON object matching the required AgentDecision schema.
         return AgentDecision.model_validate_json(response)
 
     def run(self, goal: str) -> AgentState:
+        goal = validate_goal(goal)
         state = AgentState(
             goal=goal,
             max_steps=self.max_steps,
